@@ -13,39 +13,34 @@ public class Bishop extends Piece {
         super(color, PieceType.BISHOP);
     }
 
+    @Override
     protected List<Position> getPath(Position fromPosition, Position toPosition) {
         List<Position> path = new ArrayList<Position>();
 
-        int xDelta = fromPosition.getRow() - toPosition.getRow();
-        int yDelta = fromPosition.getColumn() - toPosition.getColumn();
+        int xDelta = toPosition.getRow() - fromPosition.getRow();
+        int yDelta = toPosition.getColumn() - fromPosition.getColumn();
 
         if (Math.abs(xDelta) == Math.abs(yDelta)) {
-            if (xDelta > 0 && yDelta > 0) {
-                for (int i = 1; i <= xDelta; i++)
-                    path.add(new Position(fromPosition.getRow() + i, fromPosition.getColumn() + i));
-            } else if (xDelta > 0 && yDelta < 0) {
-                for (int i = 1; i <= Math.abs(xDelta); i++)
-                    path.add(new Position(fromPosition.getRow() + i, fromPosition.getColumn() - i));
-            } else if (xDelta < 0 && yDelta < 0) {
-                for (int i = 1; i <= xDelta; i++)
-                    path.add(new Position(fromPosition.getRow() - i, fromPosition.getColumn() - i));
-            } else if (xDelta < 0 && yDelta > 0) {
-                for (int i = 1; i <= Math.abs(xDelta); i++)
-                    path.add(new Position(fromPosition.getRow() - i, fromPosition.getColumn() + i));
-            }
+            int signinDirectionOfRow = xDelta / Math.abs(xDelta);
+            int signinDirectionOfColumn = yDelta / Math.abs(yDelta);
+
+            for (int i = 1; i <= Math.abs(xDelta); i++)
+                path.add(new Position(fromPosition.getRow() + i * signinDirectionOfRow,
+                        fromPosition.getColumn() + i * signinDirectionOfColumn));
         }
 
         return path;
     }
 
+    @Override
     protected boolean isValidDirection(Position fromPosition, Position toPosition) {
-        int xDelta = fromPosition.getRow() - toPosition.getRow();
-        int yDelta = fromPosition.getColumn() - toPosition.getColumn();
+        int xDelta = toPosition.getRow() - fromPosition.getRow();
+        int yDelta = toPosition.getColumn() - fromPosition.getColumn();
 
+        // Valid direction is either Diagnol.
         if ((Math.abs(xDelta) == Math.abs(yDelta)))
             return true;
 
         return false;
     }
-
 }

@@ -13,40 +13,39 @@ public class Rook extends Piece {
         super(color, PieceType.ROOK);
     }
 
+    @Override
     protected List<Position> getPath(Position fromPosition, Position toPosition) {
         List<Position> path = new ArrayList<Position>();
 
-        int rowDelta = toPosition.getRow() - fromPosition.getRow();
+        int xDelta = toPosition.getRow() - fromPosition.getRow();
         int yDelta = toPosition.getColumn() - fromPosition.getColumn();
 
-        if (rowDelta == 0) {
-            if (yDelta > 0) {
-                for (int i = 1; i <= yDelta; i++)
-                    path.add(new Position(fromPosition.getRow(), fromPosition.getColumn() + i));
-            } else {
-                for (int i = 1; i <= Math.abs(yDelta); i++)
-                    path.add(new Position(fromPosition.getRow(), fromPosition.getColumn() - i));
-            }
+        int signinDirectionOfRow = 0;
+        int signinDirectionOfColumn = 0;
+        int delta = 0;
+
+        if (xDelta == 0) {
+            signinDirectionOfColumn = yDelta / Math.abs(yDelta);
+            delta = Math.abs(yDelta);
+        } else if (yDelta == 0) {
+            signinDirectionOfRow = xDelta / Math.abs(xDelta);
+            delta = Math.abs(xDelta);
         }
 
-        if (yDelta == 0) {
-            if (rowDelta > 0) {
-                for (int i = 1; i <= rowDelta; i++)
-                    path.add(new Position(fromPosition.getRow() + i, fromPosition.getColumn()));
-            } else {
-                for (int i = 1; i <= Math.abs(rowDelta); i++)
-                    path.add(new Position(fromPosition.getRow() - i, fromPosition.getColumn()));
-            }
-        }
+        for (int i = 1; i <= delta; i++)
+            path.add(new Position(fromPosition.getRow() + signinDirectionOfRow * i,
+                    fromPosition.getColumn() + signinDirectionOfColumn * i));
 
         return path;
     }
 
+    @Override
     protected boolean isValidDirection(Position fromPosition, Position toPosition) {
-        int xDelta = fromPosition.getRow() - toPosition.getRow();
-        int yDelta = fromPosition.getColumn() - toPosition.getColumn();
+        int xDelta = toPosition.getRow() - fromPosition.getRow();
+        int yDelta = toPosition.getColumn() - fromPosition.getColumn();
 
-        if ((xDelta == 0) || (yDelta == 0))
+        // Valid direction is either Horizontal(Left/Right) or Vertical(Up/Down).
+        if ((xDelta == 0) || (yDelta == 0) && !(xDelta == 0 && yDelta == 0))
             return true;
 
         return false;

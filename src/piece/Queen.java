@@ -13,59 +13,49 @@ public class Queen extends Piece {
         super(color, PieceType.QUEEN);
     }
 
+    @Override
     protected List<Position> getPath(Position fromPosition, Position toPosition) {
         List<Position> path = new ArrayList<Position>();
 
-        int xDelta = fromPosition.getRow() - toPosition.getRow();
-        int yDelta = fromPosition.getColumn() - toPosition.getColumn();
+        int xDelta = toPosition.getRow() - fromPosition.getRow();
+        int yDelta = toPosition.getColumn() - fromPosition.getColumn();
+
+        int signinDirectionOfRow = 0;
+        int signinDirectionOfColumn = 0;
+        int delta = 0;
 
         if (xDelta == 0) {
-            if (yDelta > 0) {
-                for (int i = 1; i <= yDelta; i++)
-                    path.add(new Position(fromPosition.getRow(), fromPosition.getColumn() + i));
-            } else {
-                for (int i = 1; i <= Math.abs(yDelta); i++)
-                    path.add(new Position(fromPosition.getRow(), fromPosition.getColumn() - i));
-            }
+            signinDirectionOfColumn = yDelta / Math.abs(yDelta);
+            delta = Math.abs(yDelta);
+        } else if (yDelta == 0) {
+            signinDirectionOfRow = xDelta / Math.abs(xDelta);
+            delta = Math.abs(xDelta);
+        } else if (Math.abs(xDelta) == Math.abs(yDelta)) {
+            signinDirectionOfRow = xDelta / Math.abs(xDelta);
+            signinDirectionOfColumn = yDelta / Math.abs(yDelta);
+            delta = Math.abs(yDelta);
         }
 
-        if (yDelta == 0) {
-            if (xDelta > 0) {
-                for (int i = 1; i <= xDelta; i++)
-                    path.add(new Position(fromPosition.getRow() + i, fromPosition.getColumn()));
-            } else {
-                for (int i = 1; i <= Math.abs(xDelta); i++)
-                    path.add(new Position(fromPosition.getRow() - i, fromPosition.getColumn()));
-            }
-        }
-
-        if (Math.abs(xDelta) == Math.abs(yDelta)) {
-            if (xDelta > 0 && yDelta > 0) {
-                for (int i = 1; i <= xDelta; i++)
-                    path.add(new Position(fromPosition.getRow() + i, fromPosition.getColumn() + i));
-            } else if (xDelta > 0 && yDelta < 0) {
-                for (int i = 1; i <= Math.abs(xDelta); i++)
-                    path.add(new Position(fromPosition.getRow() + i, fromPosition.getColumn() - i));
-            } else if (xDelta < 0 && yDelta < 0) {
-                for (int i = 1; i <= xDelta; i++)
-                    path.add(new Position(fromPosition.getRow() - i, fromPosition.getColumn() - i));
-            } else if (xDelta < 0 && yDelta > 0) {
-                for (int i = 1; i <= Math.abs(xDelta); i++)
-                    path.add(new Position(fromPosition.getRow() - i, fromPosition.getColumn() + i));
-            }
-        }
+        for (int i = 1; i <= delta; i++)
+            path.add(new Position(fromPosition.getRow() + i * signinDirectionOfRow,
+                    fromPosition.getColumn() + i * signinDirectionOfColumn));
 
         return path;
     }
 
+    @Override
     protected boolean isValidDirection(Position fromPosition, Position toPosition) {
-        int xDelta = fromPosition.getRow() - toPosition.getRow();
-        int yDelta = fromPosition.getColumn() - toPosition.getColumn();
+        int xDelta = toPosition.getRow() - fromPosition.getRow();
+        int yDelta = toPosition.getColumn() - fromPosition.getColumn();
 
-        if ((xDelta == 0) || (yDelta == 0) || (Math.abs(xDelta) == Math.abs(yDelta)))
+        // Valid direction is either Horizontal(Left/Right) or Vertical(Up/Down).
+        if ((xDelta == 0) || (yDelta == 0) && !(xDelta == 0 && yDelta == 0))
+            return true;
+
+        // Valid direction is either Diagonal.
+        if ((Math.abs(xDelta) == Math.abs(yDelta)))
             return true;
 
         return false;
     }
-
 }

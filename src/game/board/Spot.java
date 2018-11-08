@@ -8,10 +8,10 @@ public class Spot {
     Piece piece = null;
     Boolean isOccupied = false;
 
-    Spot(Position position, Piece piece) {
+    public Spot(Position position, Piece piece) {
         this.position = position;
         this.piece = piece;
-        if(this.piece != null) {
+        if (this.piece != null) {
             isOccupied = true;
         }
     }
@@ -28,18 +28,22 @@ public class Spot {
 
     public void setPiece(Piece piece) {
         this.piece = piece;
-        if(this.piece != null) {
+        if (this.piece != null) {
             isOccupied = true;
         } else {
             isOccupied = false;
         }
     }
 
-    public void displaySpot() {
+    public void clearSpot() {
+        setPiece(null);
+    }
+
+    public String getDisplayIdentifier() {
         if (this.isOccupied) {
-            this.piece.displayPiece();
+            return this.piece.getDisplayIdentifier();
         } else {
-            System.out.print("       ");
+            return null;
         }
     }
 

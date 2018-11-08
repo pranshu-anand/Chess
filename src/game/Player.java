@@ -1,5 +1,6 @@
 package src.game;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import src.game.board.Board;
@@ -10,12 +11,20 @@ import src.piece.Piece;
 public class Player {
 
     final Color color;
-    List<Piece> pieces;
-    List<Spot> occupiedSlots;
+    List<Piece> piecesNotOnBoard;
+    List<Spot> occupiedSpots;
+    Spot kingSpot;
 
-    public Player(Color color, List<Piece> pieces) {
+    public Player(Color color, List<Spot> occupiedSpots) {
         this.color = color;
-        this.pieces = pieces;
+        this.piecesNotOnBoard = new ArrayList<Piece>();
+        this.occupiedSpots = occupiedSpots;
+        for (Spot spot : occupiedSpots) {
+            if (spot.getPiece().getPieceType() == PieceType.KING) {
+                kingSpot = spot;
+                return;
+            }
+        }
     }
 
     public boolean isCheckMate(Board board) {
@@ -23,7 +32,7 @@ public class Player {
         return false;
     }
 
-    public Boolean move(Position fromPosition, Position toPosition, Board board) {
+    public Boolean isValidMove(Position fromPosition, Position toPosition, Board board) {
         Piece piece = board.getPieceAtSpot(fromPosition);
         if (piece == null) {
             return false;
@@ -41,16 +50,36 @@ public class Player {
     }
 
     public boolean isCheck(Board board) {
-        // TODO Auto-generated method stub
         return false;
     }
 
     public List<Spot> getOccupiedSpots() {
-        return this.occupiedSlots;
+        return this.occupiedSpots;
     }
 
     public Spot getKingSpot() {
-        // TODO Auto-generated method stub
-        return null;
+        return kingSpot;
     }
+
+    public void setKingSpot(Spot kingSpot) {
+        this.kingSpot = kingSpot;
+    }
+
+    public void removeFromOccupiedSpots(Spot spot) {
+        if (spot != null) {
+            occupiedSpots.remove(spot);
+            piecesNotOnBoard.add(spot.getPiece());
+        }
+    }
+
+    public void addToOccupiedSpots(Position position, Piece piece) {
+        if (piecesNotOnBoard.remove(piece))
+            occupiedSpots.add(new Spot(position, piece));
+    }
+
+    public void moveOccupiedSpots(Position position, Piece piece) {
+        if (piecesNotOnBoard.remove(piece))
+            occupiedSpots.add(new Spot(position, piece));
+    }
+
 }

@@ -6,6 +6,5 @@ public class ChessProgram {
         Game game = new Game();
         game.initialize();
         game.play();
-        game.showResult();
     }
 }

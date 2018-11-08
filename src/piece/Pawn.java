@@ -22,7 +22,7 @@ public class Pawn extends Piece {
         if (!isValidDirection(fromPosition, toPosition)) {
             return false;
         }
-System.out.println("111");
+        System.out.println("111");
         List<Position> path = getPath(fromPosition, toPosition);
         if (isPathObstructed(path, board)) {
             return false;
@@ -63,6 +63,7 @@ System.out.println("111");
         return true;
     }
 
+    @Override
     protected List<Position> getPath(Position fromPosition, Position toPosition) {
         List<Position> path = new ArrayList<Position>();
 
@@ -70,7 +71,7 @@ System.out.println("111");
         int yDelta = fromPosition.getColumn() - toPosition.getColumn();
 
         if (yDelta == 0 && this.getIsFirstMove() && xDelta == -2)
-            path.add(new Position((fromPosition.getRow() + fromPosition.getColumn()) / 2, fromPosition.getColumn()));
+            path.add(new Position((fromPosition.getRow() + toPosition.getRow()) / 2, fromPosition.getColumn()));
 
         path.add(toPosition);
 
@@ -78,6 +79,7 @@ System.out.println("111");
 
     }
 
+    @Override
     protected boolean isValidDirection(Position fromPosition, Position toPosition) {
         int xDelta = fromPosition.getRow() - toPosition.getRow();
         int yDelta = fromPosition.getColumn() - toPosition.getColumn();

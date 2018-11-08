@@ -15,84 +15,100 @@ import src.piece.Piece;
 public class Game {
     int size = 8;
     Board board;
-    List<Piece> whitePieces, blackPieces;
     Player whitePlayer, blackPlayer;
 
     public void initialize() {
         board = new Board(size);
 
-        whitePieces = setupPiecesOnBoard(Color.WHITE);
-        whitePlayer = new Player(Color.WHITE, whitePieces);
+        List<Spot> spotsOfWhitePieces = setupPiecesOnBoard(Color.WHITE);
+        whitePlayer = new Player(Color.WHITE, spotsOfWhitePieces);
 
-        blackPieces = setupPiecesOnBoard(Color.BLACK);
-        blackPlayer = new Player(Color.BLACK, blackPieces);
+        List<Spot> spotsOfBlackPieces = setupPiecesOnBoard(Color.BLACK);
+        blackPlayer = new Player(Color.BLACK, spotsOfBlackPieces);
 
         board.displayBoard();
     }
 
-    private List<Piece> setupPiecesOnBoard(Color color) {
-        List<Piece> pieces = new ArrayList<Piece>();
+    private List<Spot> setupPiecesOnBoard(Color color) {
+        List<Spot> spots = new ArrayList<Spot>();
         PieceFactory factory = new PieceFactory();
 
         int x;
         if (color == Color.WHITE)
-            x = 1;
-        else
-            x = this.size - 2;
-
-        for (int i = 0; i < size; i++) {
-            Piece piece = factory.createPawn(color);
-            pieces.add(piece);
-            board.setSpot(new Position(x, i), piece);
-        }
-
-        if (color == Color.WHITE)
-            x = 0;
+            x = 2;
         else
             x = this.size - 1;
 
+        for (int i = 1; i <= size; i++) {
+            Piece piece = factory.createPawn(color);
+            Position position = new Position(x, i);
+            board.setSpot(position, piece);
+            spots.add(board.getSpot(position));
+        }
+
+        if (color == Color.WHITE)
+            x = 1;
+        else
+            x = this.size;
+
         Piece piece = factory.createRook(color);
-        pieces.add(piece);
-        board.setSpot(new Position(x, 0), piece);
+        Position position = new Position(x, 1);
+        board.setSpot(position, piece);
+        spots.add(board.getSpot(position));
 
         piece = factory.createKnight(color);
-        pieces.add(piece);
-        board.setSpot(new Position(x, 1), piece);
+        position = new Position(x, 2);
+        board.setSpot(position, piece);
+        spots.add(board.getSpot(position));
 
         piece = factory.createBishop(color);
-        pieces.add(piece);
-        board.setSpot(new Position(x, 2), piece);
+        position = new Position(x, 3);
+        board.setSpot(position, piece);
+        spots.add(board.getSpot(position));
 
         piece = factory.createQueen(color);
-        pieces.add(piece);
-        board.setSpot(new Position(x, 3), piece);
+        position = new Position(x, 4);
+        board.setSpot(position, piece);
+        spots.add(board.getSpot(position));
 
         piece = factory.createKing(color);
-        pieces.add(piece);
-        board.setSpot(new Position(x, 4), piece);
+        position = new Position(x, 5);
+        board.setSpot(position, piece);
+        spots.add(board.getSpot(position));
 
         piece = factory.createBishop(color);
-        pieces.add(piece);
-        board.setSpot(new Position(x, 5), piece);
+        position = new Position(x, 6);
+        board.setSpot(position, piece);
+        spots.add(board.getSpot(position));
 
         piece = factory.createKnight(color);
-        pieces.add(piece);
-        board.setSpot(new Position(x, 6), piece);
+        position = new Position(x, 7);
+        board.setSpot(position, piece);
+        spots.add(board.getSpot(position));
 
         piece = factory.createRook(color);
-        pieces.add(piece);
-        board.setSpot(new Position(x, 7), piece);
+        position = new Position(x, 8);
+        board.setSpot(position, piece);
+        spots.add(board.getSpot(position));
 
-        return pieces;
+        return spots;
     }
 
+    /**
+     * Play method responsible for the actual game play turn-by-turn.
+     *
+     */
     public void play() {
         Scanner sc = new Scanner(System.in);
 
-        int playerNumber = 0;
+        // PlayerNumber-0 is a proxy for WHITE.
+        // PlayerNumber-1 is a proxy for BLACK.
+        int currentPlayerNumber = 0;
+
         while (true) {
             Player currentPlayer, nextPlayer;
-            if (playerNumber == 0) {
+
+            if (currentPlayerNumber == 0) {
                 currentPlayer = whitePlayer;
                 nextPlayer = blackPlayer;
             } else {
@@ -116,15 +132,32 @@ public class Game {
                     System.out.println("Invalid Start-Position. Please Re-enter.");
                     continue;
                 }
+
                 if (!board.isValidPosition(toPosition)) {
                     System.out.println("Invalid To-Position. Please Re-enter.");
                     continue;
                 }
 
-                Boolean isValid = currentPlayer.move(fromPosition, toPosition, board);
-                if (isValid) {
-                    board.clearSpot(toPosition);
-                    board.setSpot(toPosition, board.getPieceAtSpot(fromPosition));
+                Boolean isValidMove = currentPlayer.isValidMove(fromPosition, toPosition, board);
+
+                if (isValidMove) {
+                    Spot fromSpot = board.getSpot(fromPosition);
+                    Spot toSpot = board.getSpot(toPosition);
+
+                    Piece pieceAtFromPosition = board.getPieceAtSpot(fromPosition);
+                    Piece pieceAtToPosition = board.getPieceAtSpot(toPosition);
+
+                    if (pieceAtToPosition != null) {
+                        nextPlayer.removeFromOccupiedSpots(board.getSpot(toPosition));
+                        board.clearSpot(toPosition);
+                    }
+
+                    board.setSpot(toPosition, pieceAtFromPosition);
+                    currentPlayer.removeFromOccupiedSpots(fromSpot);
+                    currentPlayer.addToOccupiedSpots(toPosition, board.getPieceAtSpot(fromPosition));
+                    if (pieceAtFromPosition.getPieceType() == PieceType.KING)
+                        currentPlayer.setKingSpot(board.getSpot(toPosition));
+
                     board.clearSpot(fromPosition);
                     board.displayBoard();
 
@@ -144,63 +177,73 @@ public class Game {
                 }
             }
 
-            playerNumber = (playerNumber + 1) % 2;
+            currentPlayerNumber = (currentPlayerNumber + 1) % 2;
         }
     }
 
-    private boolean isCheckMate(Player nextPlayer, Player currentPlayer) {
-        if (nextPlayer == null || currentPlayer == null)
+    private boolean isCheckMate(Player checkedPlayer, Player checkedByPlayer) {
+        if (checkedPlayer == null || checkedByPlayer == null)
             return false;
-        List<Spot> currentPlayerSpots = currentPlayer.getOccupiedSpots();
-        Spot kingSpot = nextPlayer.getKingSpot();
-        Position nextPlayerKingPosition = kingSpot.getPosition();
 
-        Map<Position, Boolean> nextPlayerKingPossiblePosition = new HashMap<Position, Boolean>();
-        nextPlayerKingPossiblePosition.put(nextPlayerKingPosition, false);
-        nextPlayerKingPossiblePosition
-                .put(new Position(nextPlayerKingPosition.getRow() + 1, nextPlayerKingPosition.getColumn() + 1), false);
-        nextPlayerKingPossiblePosition
-                .put(new Position(nextPlayerKingPosition.getRow() + 1, nextPlayerKingPosition.getColumn()), false);
-        nextPlayerKingPossiblePosition
-                .put(new Position(nextPlayerKingPosition.getRow() + 1, nextPlayerKingPosition.getColumn() - 1), false);
-        nextPlayerKingPossiblePosition
-                .put(new Position(nextPlayerKingPosition.getRow(), nextPlayerKingPosition.getColumn() - 1), false);
-        nextPlayerKingPossiblePosition
-                .put(new Position(nextPlayerKingPosition.getRow() - 1, nextPlayerKingPosition.getColumn() - 1), false);
-        nextPlayerKingPossiblePosition
-                .put(new Position(nextPlayerKingPosition.getRow() - 1, nextPlayerKingPosition.getColumn()), false);
-        nextPlayerKingPossiblePosition
-                .put(new Position(nextPlayerKingPosition.getRow() - 1, nextPlayerKingPosition.getColumn() + 1), false);
-        nextPlayerKingPossiblePosition
-                .put(new Position(nextPlayerKingPosition.getRow(), nextPlayerKingPosition.getColumn() + 1), false);
+        List<Spot> checkedByPlayerSpots = checkedByPlayer.getOccupiedSpots();
+        Spot kingSpot = checkedPlayer.getKingSpot();
+        Position checkedPlayerKingPosition = kingSpot.getPosition();
 
-        for (Spot spot : currentPlayerSpots) {
-            Position currentPlayerPosition = spot.getPosition();
-            for (Position toPosition : nextPlayerKingPossiblePosition.keySet()) {
-                if (toPosition == spot.getPosition())
-                    continue;
-                if (nextPlayerKingPossiblePosition.get(toPosition))
-                    continue;
-                if (currentPlayer.move(currentPlayerPosition, toPosition, board))
-                    nextPlayerKingPossiblePosition.put(toPosition, true);
+        Map<Position, Boolean> checkedPlayerKingPossiblePosition = new HashMap<Position, Boolean>();
+
+        checkedPlayerKingPossiblePosition.put(checkedPlayerKingPosition, false);
+        checkedPlayerKingPossiblePosition.put(
+                new Position(checkedPlayerKingPosition.getRow() + 1, checkedPlayerKingPosition.getColumn() + 1), false);
+        checkedPlayerKingPossiblePosition.put(
+                new Position(checkedPlayerKingPosition.getRow() + 1, checkedPlayerKingPosition.getColumn()), false);
+        checkedPlayerKingPossiblePosition.put(
+                new Position(checkedPlayerKingPosition.getRow() + 1, checkedPlayerKingPosition.getColumn() - 1), false);
+        checkedPlayerKingPossiblePosition.put(
+                new Position(checkedPlayerKingPosition.getRow(), checkedPlayerKingPosition.getColumn() - 1), false);
+        checkedPlayerKingPossiblePosition.put(
+                new Position(checkedPlayerKingPosition.getRow() - 1, checkedPlayerKingPosition.getColumn() - 1), false);
+        checkedPlayerKingPossiblePosition.put(
+                new Position(checkedPlayerKingPosition.getRow() - 1, checkedPlayerKingPosition.getColumn()), false);
+        checkedPlayerKingPossiblePosition.put(
+                new Position(checkedPlayerKingPosition.getRow() - 1, checkedPlayerKingPosition.getColumn() + 1), false);
+        checkedPlayerKingPossiblePosition.put(
+                new Position(checkedPlayerKingPosition.getRow(), checkedPlayerKingPosition.getColumn() + 1), false);
+
+        for (Position toPosition : checkedPlayerKingPossiblePosition.keySet()) {
+            if (!board.isValidPosition(toPosition)) {
+                checkedPlayerKingPossiblePosition.put(toPosition, true);
+                continue;
+            }
+            for (Spot checkedByPlayerSpot : checkedByPlayerSpots) {
+                Position checkedByPlayerPosition = checkedByPlayerSpot.getPosition();
+                if (board.getPieceAtSpot(toPosition) != null) {
+                    checkedPlayerKingPossiblePosition.put(toPosition, true);
+                    break;
+                }
+
+                if (checkedByPlayer.isValidMove(checkedByPlayerPosition, toPosition, board)) {
+                    checkedPlayerKingPossiblePosition.put(toPosition, true);
+                    break;
+                }
             }
         }
 
-        Collection<Boolean> isCheckValues = nextPlayerKingPossiblePosition.values();
-        if (isCheckValues.contains(false))
-            return false;
+        Collection<Boolean> isCheckValues = checkedPlayerKingPossiblePosition.values();
+        if (!isCheckValues.contains(false))
+            return true;
 
-        return true;
+        return false;
     }
 
-    private boolean isCheck(Player nextPlayer, Player currentPlayer) {
-        if (nextPlayer == null || currentPlayer == null)
+    private boolean isCheck(Player checkedPlayer, Player checkedByPlayer) {
+        if (checkedPlayer == null || checkedByPlayer == null)
             return false;
-        List<Spot> currentPlayerSpots = currentPlayer.getOccupiedSpots();
-        Spot kingSpot = nextPlayer.getKingSpot();
-        Position nextPlayerKingPosition = kingSpot.getPosition();
-        for (Spot spot : currentPlayerSpots) {
-            if (currentPlayer.move(spot.getPosition(), nextPlayerKingPosition, board))
+        List<Spot> checkedPlayerSpots = checkedByPlayer.getOccupiedSpots();
+        Spot kingSpot = checkedPlayer.getKingSpot();
+        System.out.println("\nKing position: " + kingSpot.getPosition().toString());
+        Position checkedPlayerKingPosition = kingSpot.getPosition();
+        for (Spot spot : checkedPlayerSpots) {
+            if (checkedByPlayer.isValidMove(spot.getPosition(), checkedPlayerKingPosition, board))
                 return true;
         }
         return false;
@@ -231,16 +274,6 @@ public class Game {
      */
     private void displayResult(Player player) {
         System.out.println("\n Player - " + player.color + " won!");
-
     }
 
-
-    /**
-     * Show Result.
-     *
-     * @param player - player who is in check-mate.
-     */
-    public void showResult() {
-
-    }
 }

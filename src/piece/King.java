@@ -13,16 +13,19 @@ public class King extends Piece {
         super(color, PieceType.KING);
     }
 
+    @Override
     protected List<Position> getPath(Position fromPosition, Position toPosition) {
         List<Position> path = new ArrayList<Position>();
         path.add(toPosition);
         return path;
     }
 
+    @Override
     protected boolean isValidDirection(Position fromPosition, Position toPosition) {
-        int xDelta = Math.abs(fromPosition.getRow() - toPosition.getRow());
-        int yDelta = Math.abs(fromPosition.getColumn() - toPosition.getColumn());
+        int xDelta = Math.abs(toPosition.getRow() - fromPosition.getRow());
+        int yDelta = Math.abs(toPosition.getColumn() - fromPosition.getColumn());
 
+        // Valid step is 1-step in any direction.
         if ((xDelta == 0 || xDelta == 1) && (yDelta == 0 || yDelta == 1))
             return true;
 

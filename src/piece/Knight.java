@@ -13,6 +13,7 @@ public class Knight extends Piece {
         super(color, PieceType.KNIGHT);
     }
 
+    @Override
     protected List<Position> getPath(Position fromPosition, Position toPosition) {
         List<Position> path = new ArrayList<Position>();
 
@@ -20,14 +21,16 @@ public class Knight extends Piece {
         return path;
     }
 
+    @Override
     protected boolean isValidDirection(Position fromPosition, Position toPosition) {
-        int xDelta = fromPosition.getRow() - toPosition.getRow();
-        int yDelta = fromPosition.getColumn() - toPosition.getColumn();
+        int xDelta = toPosition.getRow() - fromPosition.getRow();
+        int yDelta = toPosition.getColumn() - fromPosition.getColumn();
 
+        // Valid direction is L-shaped move: with 2 steps horizontally(vertically) and 1
+        // step vertically (horizontally).
         if ((xDelta * xDelta + yDelta * yDelta) == 5)
             return true;
 
         return false;
     }
-
 }
