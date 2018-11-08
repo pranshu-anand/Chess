@@ -34,12 +34,15 @@ public class Player {
 
     public Boolean isValidMove(Position fromPosition, Position toPosition, Board board) {
         Piece piece = board.getPieceAtSpot(fromPosition);
-        if (piece == null) {
+
+        if (piece == null)
             return false;
-        }
-        if (piece.getColor() != this.color) {
+
+        if (piece.getColor() != this.color)
             return false;
-        }
+
+        if (fromPosition.equals(toPosition))
+            return false;
 
         Boolean isValidMove = piece.isValidMove(fromPosition, toPosition, board);
 

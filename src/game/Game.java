@@ -142,7 +142,6 @@ public class Game {
 
                 if (isValidMove) {
                     Spot fromSpot = board.getSpot(fromPosition);
-                    Spot toSpot = board.getSpot(toPosition);
 
                     Piece pieceAtFromPosition = board.getPieceAtSpot(fromPosition);
                     Piece pieceAtToPosition = board.getPieceAtSpot(toPosition);
@@ -161,8 +160,8 @@ public class Game {
                     board.clearSpot(fromPosition);
                     board.displayBoard();
 
-                    if (isCheck(nextPlayer, currentPlayer)) {
-                        if (isCheckMate(nextPlayer, currentPlayer)) {
+                    if (isCheck(nextPlayer, currentPlayer, board)) {
+                        if (isCheckMate(nextPlayer, currentPlayer, board)) {
                             displayCheckMate(nextPlayer);
                             displayResult(currentPlayer);
                             sc.close();
@@ -181,6 +180,123 @@ public class Game {
         }
     }
 
+    private boolean isCheck(Player checkedPlayer, Player checkedByPlayer, Board board) {
+        if (checkedPlayer == null || checkedByPlayer == null || board == null)
+            return false;
+
+        List<Spot> checkedByPlayerSpots = checkedByPlayer.getOccupiedSpots();
+        Spot kingSpot = checkedPlayer.getKingSpot();
+
+        Position checkedPlayerKingPosition = kingSpot.getPosition();
+        for (Spot spot : checkedByPlayerSpots) {
+            if (checkedByPlayer.isValidMove(spot.getPosition(), checkedPlayerKingPosition, board))
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * Displays the situation of 'Check'.
+     *
+     * @param player - player who is in check.
+     */
+    private void displayCheck(Player player) {
+        System.out.println("\n Player - " + player.color + " is in Check!");
+    }
+
+    /**
+     * Displays the situation of 'CheckMate'.
+     *
+     * @param player - player who is in check-mate.
+     */
+    private void displayCheckMate(Player player) {
+        System.out.println("\n Player - " + player.color + " has been check-mated!");
+    }
+
+    /**
+     * Displays the result.
+     *
+     * @param player - player who is in check.
+     */
+    private void displayResult(Player player) {
+        System.out.println("\n Player - " + player.color + " won!");
+    }
+
+    private boolean isCheckMate(Player checkedPlayer, Player checkedByPlayer, Board board) {
+        if (checkedPlayer == null || checkedByPlayer == null || board == null)
+            return false;
+
+        // Check for Check.
+        if (!isCheck(checkedPlayer, checkedByPlayer, board)) {
+            return false;
+        }
+
+        Boolean isCheckMate = true;
+
+        Board copyBoard = new Board(board);
+
+        List<Spot> checkedPlayerSpots = new ArrayList<Spot>(checkedPlayer.getOccupiedSpots());
+
+        for (Spot checkedPlayerSpot : checkedPlayerSpots) {
+            Position fromPosition = checkedPlayerSpot.getPosition();
+
+            for (int i = 1; i <= board.getSize(); i++) {
+                for (int j = 1; j <= board.getSize(); j++) {
+                    Position toPosition = new Position(i, j);
+                    Boolean isValidMove = checkedPlayer.isValidMove(fromPosition, toPosition, copyBoard);
+
+                    if (isValidMove) {
+                        Spot fromSpot = copyBoard.getSpot(fromPosition);
+                        Spot toSpot = copyBoard.getSpot(toPosition);
+
+                        Piece pieceAtFromPosition = copyBoard.getPieceAtSpot(fromPosition);
+                        Piece pieceAtToPosition = copyBoard.getPieceAtSpot(toPosition);
+
+                        // Perform the move.
+                        if (pieceAtToPosition != null) {
+                            checkedByPlayer.removeFromOccupiedSpots(board.getSpot(toPosition));
+                            copyBoard.clearSpot(toPosition);
+                        }
+
+                        copyBoard.setSpot(toPosition, pieceAtFromPosition);
+                        checkedPlayer.removeFromOccupiedSpots(fromSpot);
+                        checkedPlayer.addToOccupiedSpots(toPosition, pieceAtFromPosition);
+
+                        if (pieceAtFromPosition.getPieceType() == PieceType.KING)
+                            checkedPlayer.setKingSpot(copyBoard.getSpot(toPosition));
+
+                        copyBoard.clearSpot(fromPosition);
+
+                        // Check for Check.
+                        if (!isCheck(checkedPlayer, checkedByPlayer, copyBoard)) {
+                            isCheckMate = false;
+                        }
+
+                        // Revert back the move.
+                        if (pieceAtToPosition != null) {
+                            checkedByPlayer.addToOccupiedSpots(toPosition, pieceAtToPosition);
+                            copyBoard.clearSpot(toPosition);
+                        }
+
+                        copyBoard.setSpot(toPosition, pieceAtToPosition);
+                        copyBoard.setSpot(fromPosition, pieceAtFromPosition);
+
+                        checkedPlayer.removeFromOccupiedSpots(toSpot);
+                        checkedPlayer.addToOccupiedSpots(fromPosition, pieceAtFromPosition);
+
+                        if (pieceAtFromPosition.getPieceType() == PieceType.KING)
+                            checkedPlayer.setKingSpot(copyBoard.getSpot(fromPosition));
+
+                        if (!isCheckMate)
+                            return false;
+                    }
+                }
+            }
+        }
+        return isCheckMate;
+    }
+
+    @SuppressWarnings("unused")
     private boolean isCheckMate(Player checkedPlayer, Player checkedByPlayer) {
         if (checkedPlayer == null || checkedByPlayer == null)
             return false;
@@ -233,47 +349,6 @@ public class Game {
             return true;
 
         return false;
-    }
-
-    private boolean isCheck(Player checkedPlayer, Player checkedByPlayer) {
-        if (checkedPlayer == null || checkedByPlayer == null)
-            return false;
-        List<Spot> checkedPlayerSpots = checkedByPlayer.getOccupiedSpots();
-        Spot kingSpot = checkedPlayer.getKingSpot();
-        System.out.println("\nKing position: " + kingSpot.getPosition().toString());
-        Position checkedPlayerKingPosition = kingSpot.getPosition();
-        for (Spot spot : checkedPlayerSpots) {
-            if (checkedByPlayer.isValidMove(spot.getPosition(), checkedPlayerKingPosition, board))
-                return true;
-        }
-        return false;
-    }
-
-    /**
-     * Displays the situation of 'Check'.
-     *
-     * @param player - player who is in check.
-     */
-    private void displayCheck(Player player) {
-        System.out.println("\n Player - " + player.color + " is in Check!");
-    }
-
-    /**
-     * Displays the situation of 'CheckMate'.
-     *
-     * @param player - player who is in check-mate.
-     */
-    private void displayCheckMate(Player player) {
-        System.out.println("\n Player - " + player.color + " has been check-mated!");
-    }
-
-    /**
-     * Displays the result.
-     *
-     * @param player - player who is in check.
-     */
-    private void displayResult(Player player) {
-        System.out.println("\n Player - " + player.color + " won!");
     }
 
 }

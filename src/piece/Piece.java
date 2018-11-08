@@ -123,7 +123,6 @@ public abstract class Piece {
 
         // Checks if the last destination spot is empty or has same color as the piece
         // which is to be moved.
-        System.out.println(path.toString());
         Piece pieceAtEndOfPath = board.getPieceAtSpot(path.get(path.size() - 1));
         if (pieceAtEndOfPath != null && pieceAtEndOfPath.color == this.color)
             return true;

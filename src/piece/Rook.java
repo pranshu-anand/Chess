@@ -24,10 +24,10 @@ public class Rook extends Piece {
         int signinDirectionOfColumn = 0;
         int delta = 0;
 
-        if (xDelta == 0) {
+        if (xDelta == 0 && yDelta != 0) {
             signinDirectionOfColumn = yDelta / Math.abs(yDelta);
             delta = Math.abs(yDelta);
-        } else if (yDelta == 0) {
+        } else if (yDelta == 0 && xDelta != 0) {
             signinDirectionOfRow = xDelta / Math.abs(xDelta);
             delta = Math.abs(xDelta);
         }
